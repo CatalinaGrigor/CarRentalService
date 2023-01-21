@@ -1,0 +1,123 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script language=javascript>
+        function submitPutLink() {
+            document.putlink.submit();
+        }
+    </script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-0evHe/X+R7YkIZDRvuzKMRqM+OrBnVFBL6DOitfPri4tjfHxaWutUpFmBp4vmVor" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0-beta1/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-pprn3073KE6tl6bjs2QrFaJGz5/SUsLqktiwsUTF55Jfv3qYSDhgCecCxMW52nD2"
+            crossorigin="anonymous"></script>
+</head>
+<body>
+<h1> Tp-Location de voitures</h1>
+
+
+<!--bouton pour afficher la liste de tous les autos -->
+<button type="button" class="btn btn-outline-primary" onclick="location.href='/api/v1/'">Liste de tous les autos
+</button>
+
+<!--bouton pour afficher la liste de tous les autos louer -->
+<button type="button" class="btn btn-outline-primary" onclick="location.href='/api/v1/listlouer'">Liste des autos
+    loues
+</button>
+<p>
+
+<!--tableau pour nos autos -->
+<table border="1" cellpadding="10">
+    <thread>
+        <tr border="1">
+            <th>Id_auto</th>
+            <th>Annee</th>
+            <th>Kilometrage</th>
+            <th>Modele</th>
+            <th>Inmatriculation</th>
+            <th>Loue</th>
+            <th>Prix$</th>
+            <th>Actions</th>
+        </tr>
+    </thread>
+    <tbody>
+    <tr th:each="auto : ${listAuto}">
+        <td th:text="${auto.id_produit}">Id_auto</td>
+        <td th:text="${auto.annee}">Annee</td>
+        <td th:text="${auto.kilometrage}">Kilometrage</td>
+        <td th:text="${auto.modele}">Modele</td>
+        <td th:text="${auto.inmatriculation}">Inmatriculation</td>
+        <td th:text="${auto.loue}">Loue</td>
+        <td th:text="${auto.prix}">Prix</td>
+        <td>
+            <!--bouton pour louer-->
+            <button type="button" class="btn btn-outline-primary" th:onclick="|louer('${auto.id_produit}')|">Louer</button>
+            <!--bouton pour retourner-->
+            <button type="button" class="btn btn-outline-primary" th:onclick="|retourner('${auto.id_produit}')|">Retourner</button>
+        </td>
+    </tr>
+
+    </tbody>
+</table>
+
+</p>
+
+<!-- Javascript pour relier boutons avec les methodes de put dans la BD-->
+<script>
+
+    //script pour bouton louer, on s'en servira du code de reponse du serveur
+    function louer(id) {
+        console.log("Louer:", id);
+        var requestOptions = {
+            method: 'PUT'
+        };
+
+        fetch(`/api/v1/autos/louer/${id}`, requestOptions)
+            .then(response => {
+                if (response.status === 200){
+                    console.log("OK: ", `L'auto avec l'ID ${id} confirme louee.`)
+                    window.location.href = '/api/v1/'
+                    alert(`L'auto avec l'ID ${id} confirme louee!'`, 'success')
+                }
+                else if (response.status === 409) {
+                    console.warn("CONFLICT: ", `L'auto avec l'ID ${id} est deja louee.`)
+                    window.location.href = '/api/v1/'
+                    alert(`L'auto avec l'ID ${id} est deja louee.`, 'warning')
+                } else {
+                    alert(`PROBLEME avec l'ID ${id}`, 'danger')
+                    console.error("PROBLEME: ", response)
+                }
+            })
+    }
+
+    //script pour bouton retourner, on s'en servira du code de reponse du serveur
+    function retourner(id) {
+        console.log("RETURNER:", id);
+        var requestOptions = {
+            method: 'PUT'
+        };
+
+        fetch(`/api/v1/autos/retourner/${id}`, requestOptions)
+            .then(response => {
+                window.location.href = '/api/v1/';
+                if (response.status === 200){
+                    console.log("OK: ", `L'auto avec l'ID ${id} a ete retourne.`)
+                    alert(`L'auto avec l'ID ${id} a ete retourner.!'`, 'success')
+
+                    return true
+                }
+                else if (response.status === 409) {
+                    console.warn("CONFLICT: ", `L'auto avec l'ID ${id} n'ete pas louee.`)
+                    alert(`L'auto avec l'ID ${id} n'ete pas louee.`, 'warning')
+                    return false
+                } else {
+                    alert(`PROBLEME avec l'ID ${id}`, 'danger')
+                    console.error("PROBLEME: ", response)
+                }
+            })
+
+    }
+</script>
+</body>
+</html>
